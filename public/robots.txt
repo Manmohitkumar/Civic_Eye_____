@@ -1,0 +1,20 @@
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://propico.in/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin-settings
+Disallow: /marketing-flyer
+
+# Allow important pages
+Allow: /
+Allow: /about
+Allow: /list-property
+Allow: /rent-predictor
+Allow: /contact-us
+Allow: /privacy-policy
+Allow: /refund-policy
+Allow: /terms-of-use

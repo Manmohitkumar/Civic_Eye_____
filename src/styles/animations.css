@@ -1,0 +1,89 @@
+
+/* Base animation definitions */
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+  will-change: opacity;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.7s ease-out;
+  will-change: opacity, transform;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.7s ease-out;
+  will-change: opacity, transform;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.7s ease-out;
+  will-change: transform, opacity;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.7s ease-out;
+  will-change: transform, opacity;
+}
+
+/* Refined, more subtle pulse animations - optimized */
+.animate-primary-pulse {
+  animation: primary-pulse 2.5s infinite;
+}
+
+.animate-accent-pulse {
+  animation: accent-pulse 2.5s infinite;
+}
+
+@keyframes primary-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(90, 63, 188, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(90, 63, 188, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(90, 63, 188, 0);
+  }
+}
+
+@keyframes accent-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Add content-visibility for faster painting */
+.content-defer {
+  content-visibility: auto;
+}

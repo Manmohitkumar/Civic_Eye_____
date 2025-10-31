@@ -1,0 +1,72 @@
+
+@layer utilities {
+  /* Theme text colors using CSS variables */
+  .theme-primary-text {
+    color: var(--theme-primary);
+  }
+  
+  .theme-accent-text {
+    color: var(--theme-accent);
+  }
+  
+  /* Theme background colors */
+  .theme-primary-bg {
+    background-color: var(--theme-primary);
+  }
+  
+  .theme-accent-bg {
+    background-color: var(--theme-accent);
+  }
+
+  /* Theme border colors */  
+  .theme-primary-border {
+    border-color: var(--theme-primary);
+  }
+  
+  .theme-accent-border {
+    border-color: var(--theme-accent);
+  }
+
+  /* Consistent decoration elements */
+  .accent-line {
+    @apply h-1 w-20 bg-[var(--theme-accent)] rounded-full;
+  }
+  
+  .primary-line {
+    @apply h-1 w-20 bg-[var(--theme-primary)] rounded-full;
+  }
+
+  /* Background variants */
+  .bg-primary-light {
+    background-color: var(--theme-primary-light);
+  }
+  
+  .bg-accent-light {
+    background-color: var(--theme-accent-light);
+  }
+
+  /* Shadow effects */
+  .shadow-primary-glow {
+    box-shadow: 0 5px 20px rgba(18, 8, 103, 0.15);
+  }
+  
+  .shadow-accent-glow {
+    box-shadow: 0 5px 20px rgba(255, 90, 111, 0.15);
+  }
+
+  /* Animations */
+  .animate-primary-pulse {
+    animation: pulse-primary 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse-primary {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(18, 8, 103, 0.4);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 0 8px rgba(18, 8, 103, 0);
+    }
+  }
+}

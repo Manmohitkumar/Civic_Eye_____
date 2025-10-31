@@ -1,0 +1,81 @@
+
+/* Theme-specific styles with performance optimizations */
+.theme-hero,
+.theme-section {
+  background-color: var(--theme-background);
+  transition: background-color 0.3s ease;
+}
+
+/* Optimized gradients with reduced complexity */
+.theme-gradient {
+  background: linear-gradient(150deg, 
+    color-mix(in srgb, var(--theme-background) 92%, var(--theme-primary) 8%) 0%,
+    var(--theme-background) 100%);
+}
+
+.theme-gradient-accent {
+  background: linear-gradient(150deg, 
+    color-mix(in srgb, var(--theme-background) 94%, var(--theme-accent) 6%) 0%,
+    var(--theme-background) 100%);
+}
+
+/* Refined card styles with GPU acceleration */
+.theme-card-gradient {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(255, 255, 255, 0.85) 100%);
+  transform: translateZ(0);
+}
+
+/* Consistent badge styling */
+.theme-accent-light-badge {
+  background-color: var(--theme-accent-light);
+  color: var(--theme-accent);
+  border: 1px solid var(--theme-accent);
+  border-opacity: 0.2;
+}
+
+.theme-primary-light-badge {
+  background-color: var(--theme-primary-light);
+  color: var(--theme-primary);
+  border: 1px solid var(--theme-primary);
+  border-opacity: 0.2;
+}
+
+/* Refined header */
+.package-header {
+  background-color: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  color: var(--theme-primary);
+}
+
+.theme-dark-text {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Enhanced card styling with GPU acceleration */
+.theme-stat-card {
+  background-color: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transform: translateZ(0);
+}
+
+.theme-stat-card:hover {
+  transform: translateY(-3px) translateZ(0);
+}
+
+/* Consistent card styling */
+.feature-card,
+.testimonial-card {
+  @apply bg-white border border-gray-100 shadow-sm transform-gpu;
+}
+
+/* Primary & accent content sections */
+.primary-content-section {
+  @apply bg-[var(--theme-primary-light)];
+}
+
+.accent-content-section {
+  @apply bg-[var(--theme-accent-light)];
+}

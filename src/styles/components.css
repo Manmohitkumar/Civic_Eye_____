@@ -1,0 +1,88 @@
+
+@layer components {
+  /* Primary action buttons - Always filled with primary purple */
+  .btn-primary {
+    @apply px-6 py-3 bg-[var(--theme-primary)] text-white font-medium rounded-md shadow-sm 
+           transition-all hover:shadow-md active:scale-[0.98] inline-flex items-center;
+  }
+  
+  /* Add specific hover styling for primary button */
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--theme-primary) 90%, transparent);
+  }
+  
+  /* Secondary buttons - Always white with primary border */
+  .btn-secondary {
+    @apply px-6 py-3 bg-white border-[var(--theme-primary)] border text-[var(--theme-primary)] rounded-md font-medium shadow-sm 
+           transition-all hover:bg-[var(--theme-primary-light)] hover:shadow-md active:scale-[0.98] inline-flex items-center;
+  }
+  
+  /* Accent buttons - Always filled with coral */
+  .btn-accent {
+    @apply px-6 py-3 bg-[var(--theme-accent)] text-white rounded-md font-medium shadow-sm 
+           transition-all hover:shadow-md active:scale-[0.98] inline-flex items-center;
+  }
+  
+  /* Add specific hover styling for accent button */
+  .btn-accent:hover {
+    background-color: color-mix(in srgb, var(--theme-accent) 90%, transparent);
+  }
+  
+  /* Outline accent buttons - Always white with accent border */
+  .btn-outline-accent {
+    @apply px-6 py-3 bg-white text-[var(--theme-accent)] border border-[var(--theme-accent)] rounded-md font-medium shadow-sm
+           transition-all hover:bg-[var(--theme-accent-light)] hover:shadow-md active:scale-[0.98] inline-flex items-center;
+  }
+  
+  /* Text buttons - No background, just text color */
+  .btn-text {
+    @apply inline-flex items-center font-medium text-[var(--theme-primary)] hover:text-[var(--theme-primary)]/80 transition-colors;
+  }
+  
+  /* Text accent buttons */
+  .btn-text-accent {
+    @apply inline-flex items-center font-medium text-[var(--theme-accent)] hover:text-[var(--theme-accent)]/80 transition-colors;
+  }
+  
+  /* Consistent section dividers */
+  .section-divider {
+    @apply h-1 w-20 my-6 bg-[var(--theme-accent)] rounded-full opacity-80;
+  }
+  
+  .section-divider-primary {
+    @apply h-1 w-20 my-6 bg-[var(--theme-primary)] rounded-full opacity-80;
+  }
+  
+  /* Badges */
+  .accent-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[var(--theme-accent-light)] 
+           text-[var(--theme-accent)] border border-[var(--theme-accent)] border-opacity-20;
+  }
+  
+  .primary-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[var(--theme-primary-light)]
+           text-[var(--theme-primary)] border border-[var(--theme-primary)] border-opacity-20;
+  }
+  
+  /* Number indicators */
+  .accent-number {
+    @apply flex items-center justify-center w-8 h-8 rounded-full bg-[var(--theme-accent-light)] text-[var(--theme-accent)]
+           font-semibold border border-[var(--theme-accent)] border-opacity-30;
+  }
+  
+  .primary-number {
+    @apply flex items-center justify-center w-8 h-8 rounded-full bg-[var(--theme-primary-light)] text-[var(--theme-primary)]
+           font-semibold border border-[var(--theme-primary)] border-opacity-30;
+  }
+  
+  /* Feature cards */
+  .feature-card {
+    @apply bg-white rounded-lg p-6 shadow-sm border border-gray-100 
+           transition-all duration-300 hover:shadow-md hover:-translate-y-1;
+  }
+  
+  /* Add specific hover styling for feature card border */
+  .feature-card:hover {
+    border-color: color-mix(in srgb, var(--theme-primary) 30%, transparent);
+  }
+}

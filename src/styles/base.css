@@ -1,0 +1,93 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Smart Complaint Portal theme colors */
+    --theme-primary: #1976D2; /* Primary blue */
+    --theme-accent: #FBC02D;  /* Amber */
+    --theme-background: #F5F6FA; /* Light background */
+    
+    /* Lighter variations with proper opacity for layering */
+    --theme-primary-light: rgba(25, 118, 210, 0.08);
+    --theme-primary-medium: rgba(25, 118, 210, 0.15);
+    --theme-accent-light: rgba(251, 192, 45, 0.08);
+    --theme-accent-medium: rgba(251, 192, 45, 0.15);
+    
+    /* ShadCN variables - keeping these the same */
+    --background: 30 25% 98%;
+    --foreground: 20 10% 15%;
+    --card: 30 25% 98%;
+    --card-foreground: 20 10% 15%;
+    --popover: 30 25% 98%;
+    --popover-foreground: 20 10% 15%;
+    --primary: 32 37% 66%;
+    --primary-foreground: 40 20% 10%;
+    --secondary: 30 10% 96%;
+    --secondary-foreground: 20 10% 15%;
+    --muted: 30 15% 92%;
+    --muted-foreground: 20 10% 40%;
+    --accent: 32 40% 84%;
+    --accent-foreground: 40 40% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 30 15% 90%;
+    --input: 30 15% 90%;
+    --ring: 32 37% 60%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 20 14% 8%;
+    --foreground: 30 25% 95%;
+    --card: 20 14% 10%;
+    --card-foreground: 30 25% 95%;
+    --popover: 20 14% 8%;
+    --popover-foreground: 30 25% 95%;
+    --primary: 32 37% 45%;
+    --primary-foreground: 40 30% 98%;
+    --secondary: 20 10% 15%;
+    --secondary-foreground: 30 25% 95%;
+    --muted: 20 10% 15%;
+    --muted-foreground: 30 20% 70%;
+    --accent: 32 20% 25%;
+    --accent-foreground: 40 30% 90%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 20 10% 20%;
+    --input: 20 10% 20%;
+    --ring: 32 37% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border selection:bg-gold/20 selection:text-foreground;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+#root {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  text-align: left;
+}
