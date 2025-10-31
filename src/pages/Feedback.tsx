@@ -24,13 +24,13 @@ const Feedback = () => {
     setLoading(true);
 
     try {
-      const { error } = (await supabase.from("feedback").insert([
+      const { error } = await (supabase as any).from("feedback").insert([
         {
           ...formData,
           rating,
           user_id: null,
         },
-      ])) as any;
+      ]);
 
       if (error) throw error;
 

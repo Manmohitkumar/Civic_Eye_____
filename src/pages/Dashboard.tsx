@@ -23,9 +23,9 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const { data, error } = (await supabase
+      const { data, error } = await (supabase as any)
         .from("complaints")
-        .select("status, resolution_time_hours")) as any;
+        .select("status, resolution_time_hours");
 
       if (error) throw error;
 

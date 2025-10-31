@@ -33,11 +33,11 @@ const ComplaintTable = () => {
 
   const fetchComplaints = async () => {
     try {
-      const { data, error } = (await supabase
+      const { data, error } = await (supabase as any)
         .from("complaints")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(10)) as any;
+        .limit(10);
 
       if (error) throw error;
       setComplaints(data || []);
