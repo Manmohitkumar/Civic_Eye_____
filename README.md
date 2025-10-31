@@ -1,69 +1,86 @@
-# Welcome to your Lovable project
 
-## Project info
+# Civic_Eye
 
-**URL**: https://lovable.dev/projects/2a162a90-ef35-453a-9402-1729a6e50bf1
+Smart Civic Issue Reporter — frontend (Vite + React/TS) and a small Node mailer backend used to forward complaints to departments.
 
-## How can I edit this code?
+This README covers local setup, required environment variables, and deployment tips (Vercel).
 
-There are several ways of editing your application.
+## Quick start (local)
 
-**Use Lovable**
+1. Install dependencies
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2a162a90-ef35-453a-9402-1729a6e50bf1) and start prompting.
+```powershell
+npm install
+cd server && npm install
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+2. Create environment variables
 
-**Use your preferred IDE**
+- Frontend (root `.env` or Vercel env vars):
+	- `VITE_SUPABASE_URL` — your Supabase project URL (example: `https://xyz.supabase.co`)
+	- `VITE_SUPABASE_PUBLISHABLE_KEY` or `VITE_SUPABASE_ANON_KEY` — Supabase anon/publishable key
+	- `VITE_MAILER_URL` — URL of the mailer backend (default: `http://localhost:5000`)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Backend (`server/.env`):
+	- `EMAIL_USER` — SMTP username (e.g., Gmail address or SendGrid user)
+	- `EMAIL_PASS` — SMTP password (or app password)
+	- `FROM_NAME` — friendly from name for outgoing mail
+	- `CC_EMAIL` — default department/CC email
+	- `PORT` — backend port (default `5000`)
+	- `SUPABASE_URL` — Supabase project URL (server-side copy)
+	- `SUPABASE_SERVICE_ROLE` — Supabase service role key (DO NOT expose to client or public repos)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. Run servers
 
-Follow these steps:
+```powershell
+# backend
+cd server
+node server.js
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# frontend (project root)
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Frontend will be available at `http://localhost:3000` (Vite). Backend default: `http://localhost:5000`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Deployment (Vercel)
 
-**Use GitHub Codespaces**
+1. In your Vercel project settings, add the environment variables under Project → Settings → Environment Variables:
+	 - `VITE_SUPABASE_URL` = https://<your-project>.supabase.co
+	 - `VITE_SUPABASE_PUBLISHABLE_KEY` = <your-supabase-anon-key>
+	 - `VITE_MAILER_URL` = https://<your-mailer-endpoint> (if using hosted backend)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+2. Only public/publishable keys (anon) should be exposed to the client. Keep the `SUPABASE_SERVICE_ROLE` secret and store it only on the server (do not set it as `VITE_...`).
 
-## What technologies are used for this project?
+3. Trigger a redeploy after adding env vars.
 
-This project is built with .
+If you deploy the backend separately (e.g., to a server or serverless platform), set the `server/.env` values in that host's secret store.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Testing anonymous submissions
 
-## How can I deploy this project?
+A helper script `scripts/testAnon.js` is included to POST a test anonymous complaint to `server/api/complaints/anonymous`. Run it locally after starting the backend:
 
-Simply open [Lovable](https://lovable.dev/projects/2a162a90-ef35-453a-9402-1729a6e50bf1) and click on Share -> Publish.
+```powershell
+node scripts/testAnon.js
+```
 
-## I want to use a custom domain - is that possible?
+It will print the server response so you can verify insertion and acknowledgement behavior.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Security and cleanup
+
+- This repository currently contains `.env` files with values. Those are present in the commit history.
+	- If these contain real secrets, rotate them immediately (Supabase keys, email passwords).
+	- If you want help removing them from history, I can run a history-rewrite (BFG or git filter-repo) — note this rewrites commits and requires force-pushing.
+
+- Add `.gitignore` entries for local `.env` files to avoid future leaks.
+
+## Support
+
+If you want, I can:
+- Create a sanitized `server/.env.example` and add a `.gitignore` entry (recommended).
+- Help set Vercel environment variables via the Vercel dashboard or CLI.
+- Remove secrets from the git history (with guidance and explicit confirmation).
+
+---
+
+Happy to help with any of the above steps; tell me which one you want next.
