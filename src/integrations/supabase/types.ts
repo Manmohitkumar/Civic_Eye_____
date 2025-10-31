@@ -163,7 +163,66 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      complaints_public: {
+        Row: {
+          assigned_to: string | null
+          attachments: string[] | null
+          category: string | null
+          complaint_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          images: string[] | null
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          priority: string | null
+          resolution_time_hours: number | null
+          resolved_at: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          attachments?: string[] | null
+          category?: string | null
+          complaint_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          latitude?: never
+          location?: string | null
+          longitude?: never
+          priority?: string | null
+          resolution_time_hours?: number | null
+          resolved_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          attachments?: string[] | null
+          category?: string | null
+          complaint_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          images?: string[] | null
+          latitude?: never
+          location?: string | null
+          longitude?: never
+          priority?: string | null
+          resolution_time_hours?: number | null
+          resolved_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_complaint_id: { Args: never; Returns: string }
