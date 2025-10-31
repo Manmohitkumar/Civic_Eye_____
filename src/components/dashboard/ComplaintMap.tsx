@@ -5,19 +5,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 // Fix default marker icons
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-import iconRetina from "leaflet/dist/images/marker-icon-2x.png";
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  iconRetinaUrl: iconRetina,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 interface Complaint {
   id: string;
@@ -69,20 +62,26 @@ const ComplaintMap = () => {
     return "text-red-600";
   };
 
+  const mapContainerProps = {
+    center: [40.7489, -73.9680] as [number, number],
+    zoom: 12,
+    scrollWheelZoom: false,
+    style: { height: "100%", width: "100%" }
+  };
+
+  const tileLayerProps = {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  };
+
   return (
     <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-lg">
-      <MapContainer
-        // @ts-ignore - react-leaflet type issue
-        center={[40.7489, -73.9680]}
-        zoom={12}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <MapContainer {...mapContainerProps as any}>
+        <TileLayer {...tileLayerProps as any} />
         {complaints.map((complaint) => (
           <Marker
             key={complaint.id}
-            // @ts-ignore - react-leaflet type issue
-            position={[complaint.latitude, complaint.longitude]}
+            position={[complaint.latitude, complaint.longitude] as any}
           >
             <Popup>
               <div className="p-2">
