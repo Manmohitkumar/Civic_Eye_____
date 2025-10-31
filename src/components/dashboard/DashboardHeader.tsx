@@ -10,6 +10,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Define NavTab component first
+const NavTab = ({ 
+  to, 
+  icon, 
+  children 
+}: { 
+  to: string; 
+  icon: string; 
+  children: React.ReactNode;
+}) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <Link 
+      to={to}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
+        isActive 
+          ? 'bg-primary text-primary-foreground' 
+          : 'text-gray-700 hover:bg-gray-100'
+      }`}
+    >
+      <span>{icon}</span>
+      <span>{children}</span>
+    </Link>
+  );
+};
+
 const DashboardHeader = () => {
   const [notificationCount, setNotificationCount] = useState(3);
   const navigate = useNavigate();
@@ -93,33 +121,6 @@ const DashboardHeader = () => {
         </div>
       </div>
     </header>
-  );
-};
-
-const NavTab = ({ 
-  to, 
-  icon, 
-  children 
-}: { 
-  to: string; 
-  icon: string; 
-  children: React.ReactNode;
-}) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  
-  return (
-    <Link 
-      to={to}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
-        isActive 
-          ? 'bg-primary text-primary-foreground' 
-          : 'text-gray-700 hover:bg-gray-100'
-      }`}
-    >
-      <span>{icon}</span>
-      <span>{children}</span>
-    </Link>
   );
 };
 
