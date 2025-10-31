@@ -40,11 +40,11 @@ const ComplaintMap = () => {
 
   const fetchComplaints = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("complaints")
         .select("*")
         .not("latitude", "is", null)
-        .not("longitude", "is", null);
+        .not("longitude", "is", null)) as any;
 
       if (error) throw error;
       setComplaints(data || []);

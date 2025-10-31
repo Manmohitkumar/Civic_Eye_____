@@ -14,9 +14,9 @@ const AnalyticsChart = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("complaints")
-        .select("created_at, status, category");
+        .select("created_at, status, category")) as any;
 
       if (error) throw error;
 

@@ -23,19 +23,19 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("complaints")
-        .select("status, resolution_time_hours");
+        .select("status, resolution_time_hours")) as any;
 
       if (error) throw error;
 
       const total = data?.length || 0;
-      const resolved = data?.filter((c) => c.status === "resolved").length || 0;
-      const pending = data?.filter((c) => c.status === "pending").length || 0;
+      const resolved = data?.filter((c: any) => c.status === "resolved").length || 0;
+      const pending = data?.filter((c: any) => c.status === "pending").length || 0;
 
-      const resolvedWithTime = data?.filter((c) => c.resolution_time_hours != null) || [];
+      const resolvedWithTime = data?.filter((c: any) => c.resolution_time_hours != null) || [];
       const avgTime = resolvedWithTime.length > 0
-        ? (resolvedWithTime.reduce((sum, c) => sum + (c.resolution_time_hours || 0), 0) / resolvedWithTime.length).toFixed(1)
+        ? (resolvedWithTime.reduce((sum: number, c: any) => sum + (c.resolution_time_hours || 0), 0) / resolvedWithTime.length).toFixed(1)
         : "0";
 
       setStats({
