@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { authSchema } from "@/lib/validationSchemas";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -16,12 +17,20 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const validation = authSchema.safeParse(loginData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password,
+        email: validation.data.email,
+        password: validation.data.password,
       });
 
       if (error) throw error;
@@ -29,7 +38,6 @@ const Auth = () => {
       toast.success("Logged in successfully!");
       navigate("/");
     } catch (error: any) {
-      console.error("Login error:", error);
       toast.error(error.message || "Failed to login");
     } finally {
       setLoading(false);
@@ -44,12 +52,23 @@ const Auth = () => {
       return;
     }
 
+    const validation = authSchema.safeParse({
+      email: signupData.email,
+      password: signupData.password,
+    });
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signUp({
-        email: signupData.email,
-        password: signupData.password,
+        email: validation.data.email,
+        password: validation.data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -60,7 +79,6 @@ const Auth = () => {
       toast.success("Account created! Please check your email to confirm.");
       navigate("/");
     } catch (error: any) {
-      console.error("Signup error:", error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setLoading(false);

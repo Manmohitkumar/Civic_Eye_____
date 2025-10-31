@@ -1,27 +1,19 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import GoogleSheetsSetup from "@/components/GoogleSheetsSetup";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 const AdminSettings = () => {
+  const { isAdmin, isLoading } = useAdminCheck();
   const [googleFormUrl, setGoogleFormUrl] = useLocalStorage<string>("googleFormUrl", "");
   const [tempUrl, setTempUrl] = useState(googleFormUrl);
   const [debugMode, setDebugMode] = useLocalStorage<boolean>("debugMode", false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const navigate = useNavigate();
-  
-  // Check if admin mode is active
-  useEffect(() => {
-    const isAdmin = sessionStorage.getItem("propicoAdminMode");
-    if (!isAdmin) {
-      navigate("/");
-      toast.error("You don't have access to this page");
-    }
-  }, [navigate]);
   
   const saveGoogleFormUrl = () => {
     if (!tempUrl) {
@@ -45,24 +37,28 @@ const AdminSettings = () => {
     toast.success("Google Form URL saved successfully");
   };
   
-  const exitAdminMode = () => {
-    sessionStorage.removeItem("propicoAdminMode");
-    navigate("/");
-    toast.success("Exited admin mode", {
-      description: "You've been redirected to the homepage."
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
   
   return (
     <div className="container mx-auto px-4 py-20">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold theme-primary-text">Admin Settings</h1>
         <Button 
-          onClick={exitAdminMode}
-          variant="destructive"
+          onClick={() => navigate("/")}
+          variant="outline"
           className="flex items-center"
         >
-          Exit Admin Mode
+          Back to Dashboard
         </Button>
       </div>
       

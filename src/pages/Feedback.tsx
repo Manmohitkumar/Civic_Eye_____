@@ -9,10 +9,13 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { feedbackSchema } from "@/lib/validationSchemas";
 
 const Feedback = () => {
   const [loading, setLoading] = useState(false);
   const [rating, setRating] = useState(0);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,14 +24,33 @@ const Feedback = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = feedbackSchema.safeParse({ ...formData, rating });
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await (supabase as any).from("feedback").insert([
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Please login to submit feedback");
+        navigate("/auth");
+        return;
+      }
+
+      const { error } = await supabase.from("feedback").insert([
         {
-          ...formData,
-          rating,
-          user_id: null,
+          name: validation.data.name,
+          email: validation.data.email,
+          feedback_text: validation.data.feedback_text,
+          rating: validation.data.rating,
+          user_id: user.id,
         },
       ]);
 
@@ -38,7 +60,6 @@ const Feedback = () => {
       setFormData({ name: "", email: "", feedback_text: "" });
       setRating(0);
     } catch (error: any) {
-      console.error("Error:", error);
       toast.error("Failed to submit feedback");
     } finally {
       setLoading(false);
