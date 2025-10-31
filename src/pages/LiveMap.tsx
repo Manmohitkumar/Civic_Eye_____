@@ -1,6 +1,6 @@
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import ComplaintMap from "@/components/dashboard/ComplaintMap";
+import LiveMapComponent from "@/components/LiveMapComponent";
 
 const LiveMap = () => {
   return (
@@ -11,7 +11,7 @@ const LiveMap = () => {
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">Live Complaint Map</h1>
-            <ComplaintMap />
+            <LiveMapComponent />
           </div>
         </main>
       </div>

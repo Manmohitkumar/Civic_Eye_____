@@ -11,6 +11,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const AIQuery = lazy(() => import("./pages/AIQuery"));
 const Feedback = lazy(() => import("./pages/Feedback"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 export const routes = createBrowserRouter([
@@ -45,6 +46,10 @@ export const routes = createBrowserRouter([
   {
     path: "/auth",
     element: <Auth />,
+  },
+  {
+    path: "/profile",
+    element: <Profile />,
   },
   {
     path: "*",

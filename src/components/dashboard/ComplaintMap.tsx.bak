@@ -1,0 +1,305 @@
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { MapPin } from "lucide-react";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import './ComplaintMap.css';
+
+// Configure Leaflet's default icon path
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: '/marker-icon-2x.png',
+  iconUrl: '/marker-icon.png',
+  shadowUrl: '/marker-shadow.png',
+});
+
+// Map settings
+const CHANDIGARH_COORDS: [number, number] = [30.7333, 76.7794];
+const INITIAL_ZOOM = 13;
+
+// Define the Complaint interface
+interface Complaint {
+  id: string;
+  complaint_id: string;
+  title: string;
+  status: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  category: string;
+  created_at?: string;
+  description?: string;
+}
+
+const ComplaintMap = () => {
+  // State
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [map, setMap] = useState<L.Map | null>(null);
+
+  // Refs
+  const mapRef = useRef<HTMLDivElement>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+
+  // Fetch complaints from Supabase
+  const fetchComplaints = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('complaints')
+        .select('*')
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null);
+
+      if (error) throw error;
+      setComplaints(data || []);
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize map when component mounts
+  useEffect(() => {
+    if (!mapRef.current || map) return;
+
+    console.log('Initializing map...');
+    const mapInstance = L.map(mapRef.current, {
+      center: CHANDIGARH_COORDS,
+      zoom: INITIAL_ZOOM,
+      layers: [
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19
+        })
+      ]
+    });
+
+    // Create a layer group for markers
+    const markersLayer = L.layerGroup().addTo(mapInstance);
+    markersLayerRef.current = markersLayer;
+
+    setMap(mapInstance);
+
+    // Force a resize after initialization
+    setTimeout(() => {
+      console.log('Invalidating map size...');
+      mapInstance.invalidateSize(true);
+    }, 250);
+
+    return () => {
+      console.log('Cleaning up map...');
+      mapInstance.remove();
+      setMap(null);
+      markersLayerRef.current = null;
+    };
+  }, []);
+
+  // Set mounted state when component mounts
+  useEffect(() => {
+    console.log('Component mounted');
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  const fetchComplaints = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("complaints")
+        .select("*")
+        .not("latitude", "is", null)
+        .not("longitude", "is", null);
+
+      if (error) throw error;
+      setComplaints(data || []);
+    } catch (error) {
+      console.error("Error fetching complaints:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const initializeMap = useCallback(() => {
+    if (!mapRef.current || map) {
+      console.log('Map initialization skipped:', { hasRef: !!mapRef.current, hasMap: !!map });
+      return;
+    }
+
+    try {
+      console.log('Initializing map...', { ref: mapRef.current });
+
+      // Ensure the map container has dimensions
+      mapRef.current.style.width = '100%';
+      mapRef.current.style.height = '100%';
+      mapRef.current.style.minHeight = '500px';
+
+      const mapInstance = L.map(mapRef.current, {
+        center: [CHANDIGARH_CENTER.lat, CHANDIGARH_CENTER.lng],
+        zoom: MAP_ZOOM,
+        zoomControl: true,
+        scrollWheelZoom: true
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
+
+      // Force a resize after initialization
+      setTimeout(() => {
+        console.log('Invalidating map size...');
+        mapInstance.invalidateSize(true);
+      }, 250);
+
+      setMap(mapInstance);
+      console.log('Map initialized successfully');
+    } catch (error) {
+      console.error("Error initializing map:", error);
+    }
+  }, [map]);
+
+  const updateHeatmap = useCallback(() => {
+    if (!map || !complaints.length) return;
+
+    // Remove existing heatmap if any
+    if (heatLayer) {
+      map.removeLayer(heatLayer);
+    }
+
+    // Create new heatmap
+    const points = complaints
+      .filter(c => typeof c.latitude === 'number' && typeof c.longitude === 'number' && c.latitude !== null && c.longitude !== null)
+      .map(c => [c.latitude as number, c.longitude as number, 1]);
+
+    const newHeatLayer = (L as any).heatLayer(points, {
+      radius: 25,
+      blur: 15,
+      maxZoom: 16,
+      gradient: { 0.4: 'blue', 0.65: 'lime', 1: 'red' }
+    }).addTo(map);
+
+    setHeatLayer(newHeatLayer);
+  }, [map, complaints, heatLayer]);
+
+  const updateMarkers = useCallback(() => {
+    if (!map) return;
+
+    // Remove existing markers
+    markers.forEach(marker => marker.remove());
+
+    // Add new markers
+    const newMarkers = complaints
+      .filter(complaint => complaint.latitude !== null && complaint.longitude !== null)
+      .map(complaint => {
+        const marker = L.marker([complaint.latitude as number, complaint.longitude as number])
+          .bindPopup(`
+          <div class="p-2">
+            <h3 class="font-bold">${complaint.title}</h3>
+            <p>Status: ${complaint.status}</p>
+            <p>Category: ${complaint.category}</p>
+            <p>Location: ${complaint.location}</p>
+          </div>
+        `)
+          .addTo(map);
+
+        // Color code markers based on status
+        const el = marker.getElement();
+        if (el) {
+          el.style.filter = complaint.status === 'resolved'
+            ? 'hue-rotate(120deg)'
+            : complaint.status === 'in_progress'
+              ? 'hue-rotate(60deg)'
+              : '';
+        }
+
+        return marker;
+      });
+
+    setMarkers(newMarkers);
+  }, [map, complaints, markers]);
+
+  useEffect(() => {
+    fetchComplaints();
+  }, [fetchComplaints]);
+
+  useEffect(() => {
+    fetchComplaints();
+  }, [fetchComplaints]);
+
+  useEffect(() => {
+    // Initialize map after mounting
+    if (!map && mapRef.current && mounted) {
+      console.log('Component mounted and container ready, initializing map...');
+      const timer = setTimeout(() => {
+        initializeMap();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (map) {
+        console.log('Cleaning up map...');
+        map.remove();
+        setMap(null);
+      }
+    };
+  }, [map, initializeMap, mounted]);
+
+  useEffect(() => {
+    // Update markers and heatmap whenever complaints or map changes
+    if (map && complaints.length > 0) {
+      console.log('Updating map layers...');
+      try {
+        updateHeatmap();
+        updateMarkers();
+      } catch (error) {
+        console.error("Error updating map layers:", error);
+      }
+    }
+  }, [map, complaints, updateHeatmap, updateMarkers]);
+
+  useEffect(() => {
+    // Cleanup function to remove map when component unmounts
+    return () => {
+      if (map) {
+        markers.forEach(marker => marker.remove());
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+        }
+        map.remove();
+        setMap(null);
+      }
+    };
+  }, [map, markers, heatLayer]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+        <p>Loading map...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-[calc(100vh-12rem)] rounded-lg overflow-hidden shadow-lg bg-white">
+      <div ref={mapRef} className="map-container w-full h-full relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white bg-opacity-90 z-10 flex items-center justify-center">
+            <p className="text-gray-600">Loading map...</p>
+          </div>
+        )}
+        {!loading && complaints.length === 0 && (
+          <div className="absolute inset-0 bg-white flex items-center justify-center">
+            <div className="text-center">
+              <MapPin className="mx-auto h-12 w-12 mb-2 opacity-50" />
+              <p className="text-gray-500">No complaints with location data</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ComplaintMap;

@@ -4,6 +4,9 @@ import App from './App.tsx';
 import './index.css';
 import ErrorBoundary from './components/performance/ErrorBoundary';
 import { reportWebVitals } from './utils/performance';
+// Toast notifications
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Make sure we have a DOM element to render to
 const rootElement = document.getElementById("root");
@@ -13,7 +16,10 @@ if (!rootElement) {
 } else {
   createRoot(rootElement).render(
     <ErrorBoundary>
-      <App />
+      <>
+        <App />
+        <ToastContainer position="top-right" autoClose={4000} />
+      </>
     </ErrorBoundary>
   );
 }

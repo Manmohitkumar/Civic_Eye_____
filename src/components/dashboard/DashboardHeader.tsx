@@ -11,26 +11,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // Define NavTab component first
-const NavTab = ({ 
-  to, 
-  icon, 
-  children 
-}: { 
-  to: string; 
-  icon: string; 
+const NavTab = ({
+  to,
+  icon,
+  children
+}: {
+  to: string;
+  icon: string;
   children: React.ReactNode;
 }) => {
   const location = useLocation();
   const isActive = location.pathname === to;
-  
+
   return (
-    <Link 
+    <Link
       to={to}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
-        isActive 
-          ? 'bg-primary text-primary-foreground' 
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${isActive
+          ? 'bg-primary text-primary-foreground'
           : 'text-gray-700 hover:bg-gray-100'
-      }`}
+        }`}
     >
       <span>{icon}</span>
       <span>{children}</span>
@@ -48,13 +47,13 @@ const DashboardHeader = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/7b314dd5-c766-4046-8e2f-02a35e9e67c2.png" 
-              alt="Logo" 
+            <img
+              src="/lovable-uploads/7b314dd5-c766-4046-8e2f-02a35e9e67c2.png"
+              alt="Logo"
               className="h-8 w-12"
             />
             <span className="text-xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
-              Smart Complaint Portal
+              CivicEye
             </span>
           </Link>
 
@@ -75,8 +74,8 @@ const DashboardHeader = () => {
                 <Button variant="ghost" size="icon" className="relative">
                   <Bell size={20} />
                   {notificationCount > 0 && (
-                    <Badge 
-                      variant="destructive" 
+                    <Badge
+                      variant="destructive"
                       className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                     >
                       {notificationCount}
@@ -108,8 +107,8 @@ const DashboardHeader = () => {
             </DropdownMenu>
 
             {/* Login/User */}
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               className="gap-2"
               onClick={() => navigate('/auth')}
             >

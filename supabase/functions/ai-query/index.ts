@@ -65,7 +65,7 @@ serve(async (req) => {
 
     // Prepare context for AI
     const context = `
-You are an AI assistant for the Smart Complaint Portal. Here's the current data:
+You are an AI assistant for CivicEye. Here's the current data:
 
 Total Complaints: ${totalComplaints}
 Resolved: ${resolvedComplaints}
@@ -74,9 +74,9 @@ In Progress: ${inProgressComplaints}
 Average Resolution Time: ${avgResolutionTime} hours
 
 Recent complaints:
-${complaints?.slice(0, 10).map(c => 
-  `- ${c.complaint_id}: ${c.title} (${c.category}, ${c.status})`
-).join('\n')}
+${complaints?.slice(0, 10).map(c =>
+      `- ${c.complaint_id}: ${c.title} (${c.category}, ${c.status})`
+    ).join('\n')}
 
 Please answer the following user query based on this data. Be concise and helpful.
 `;
@@ -112,7 +112,7 @@ Please answer the following user query based on this data. Be concise and helpfu
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
@@ -120,7 +120,7 @@ Please answer the following user query based on this data. Be concise and helpfu
   } catch (error) {
     return new Response(
       JSON.stringify({ error: 'An error occurred processing your request' }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       },

@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { 
-  FileText, 
-  Search, 
-  BarChart3, 
-  Settings, 
+import {
+  FileText,
+  Search,
+  BarChart3,
   Home,
-  MapPin
+  MapPin,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,9 +15,10 @@ const DashboardSidebar = () => {
   const navItems = [
     { icon: FileText, label: "📋 Register Complaint", path: "/register-complaint", highlight: true },
     { icon: Search, label: "🔍 Track Complaints", path: "/track-complaints" },
+    { icon: MapPin, label: "🗺️ Live Map", path: "/live-map" },
     { icon: MapPin, label: "🧭 Complaint Status", path: "/" },
     { icon: BarChart3, label: "📈 Analytics", path: "/reports" },
-    { icon: Settings, label: "⚙ Settings", path: "/settings" },
+    { icon: User, label: "👤 Profile", path: "/profile" },
   ];
 
   return (
@@ -27,18 +28,18 @@ const DashboardSidebar = () => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium",
-                  isActive 
-                    ? "bg-primary text-white shadow-md" 
+                  isActive
+                    ? "bg-primary text-white shadow-md"
                     : item.highlight
-                    ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm"
-                    : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm"
+                      : "text-gray-700 hover:bg-gray-100"
                 )}
               >
                 <Icon size={20} />
@@ -47,7 +48,7 @@ const DashboardSidebar = () => {
             );
           })}
         </div>
-        
+
         {/* Quick Stats in Sidebar */}
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-sm font-semibold text-gray-600 mb-3">Quick Overview</h3>

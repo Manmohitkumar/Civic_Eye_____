@@ -13,30 +13,44 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">("password");
   const [signupData, setSignupData] = useState({ email: "", password: "", confirmPassword: "" });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validation = authSchema.safeParse(loginData);
-    if (!validation.success) {
-      const firstError = validation.error.errors[0];
-      toast.error(firstError.message);
+    // Validate email for both methods
+    if (!loginData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginData.email)) {
+      toast.error("Enter a valid email");
       return;
     }
 
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validation.data.email,
-        password: validation.data.password,
-      });
+      if (loginMethod === "password") {
+        const validation = authSchema.safeParse(loginData);
+        if (!validation.success) {
+          const firstError = validation.error.errors[0];
+          toast.error(firstError.message);
+          setLoading(false);
+          return;
+        }
 
-      if (error) throw error;
-
-      toast.success("Logged in successfully!");
-      navigate("/");
+        const { error } = await supabase.auth.signInWithPassword({
+          email: validation.data.email,
+          password: validation.data.password,
+        });
+        if (error) throw error;
+        toast.success("Logged in successfully!");
+        navigate("/");
+      } else {
+        // OTP / magic link email flow
+        const { error } = await supabase.auth.signInWithOtp({
+          email: loginData.email,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
+        toast.success("Magic link sent to your email. Check your inbox to complete login.");
+      }
     } catch (error: any) {
       toast.error(error.message || "Failed to login");
     } finally {
@@ -56,7 +70,7 @@ const Auth = () => {
       email: signupData.email,
       password: signupData.password,
     });
-    
+
     if (!validation.success) {
       const firstError = validation.error.errors[0];
       toast.error(firstError.message);
@@ -89,7 +103,7 @@ const Auth = () => {
     <div className="min-h-screen bg-[var(--theme-background)] flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Smart Complaint Portal</CardTitle>
+          <CardTitle className="text-2xl text-center">CivicEye</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -100,6 +114,17 @@ const Auth = () => {
 
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="loginMethod" checked={loginMethod === 'password'} onChange={() => setLoginMethod('password')} />
+                    <span className="text-sm">Password</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="radio" name="loginMethod" checked={loginMethod === 'otp'} onChange={() => setLoginMethod('otp')} />
+                    <span className="text-sm">Email OTP / Magic Link</span>
+                  </label>
+                </div>
+
                 <div>
                   <Label htmlFor="login-email">Email</Label>
                   <Input
@@ -110,18 +135,24 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    required
-                  />
-                </div>
+
+                {loginMethod === 'password' ? (
+                  <div>
+                    <Label htmlFor="login-password">Password</Label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">We will send a magic link/OTP to your email. Click it to complete sign in.</div>
+                )}
+
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Login"}
+                  {loading ? (loginMethod === 'password' ? 'Logging in...' : 'Sending link...') : (loginMethod === 'password' ? 'Login' : 'Send Magic Link')}
                 </Button>
               </form>
             </TabsContent>

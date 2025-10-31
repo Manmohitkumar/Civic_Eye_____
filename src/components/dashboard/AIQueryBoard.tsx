@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+// Backend removed: AI Query now redirects to external form
 
 interface Message {
   role: "user" | "assistant";
@@ -15,40 +14,10 @@ const AIQueryBoard = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
-
-    const userMessage = input.trim();
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("ai-query", {
-        body: { query: userMessage },
-      });
-
-      if (error) throw error;
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.response },
-      ]);
-    } catch (error: any) {
-      console.error("AI Query error:", error);
-      toast.error("Failed to process query. Please try again.");
-      setMessages((prev) => [
-        ...prev,
-        { 
-          role: "assistant", 
-          content: "I apologize, but I encountered an error processing your query. Please try again." 
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const JOTFORM_URL = "https://www.jotform.com/agent/019a392041607f1aa552df34483bd6febbd7";
+  // No backend: redirect users to external AI assistant form
+  const handleOpenForm = () => {
+    window.open(JOTFORM_URL, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -72,16 +41,24 @@ const AIQueryBoard = () => {
                 <li>"What's the average resolution time this month?"</li>
                 <li>"How many complaints were filed this week?"</li>
               </ul>
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => window.open(JOTFORM_URL, "_blank", "noopener,noreferrer")}
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                >
+                  Open AI Assistant Form
+                </button>
+              </div>
             </div>
           )}
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`p-4 rounded-lg ${
-                message.role === "user"
-                  ? "bg-[var(--theme-primary)] text-white ml-auto max-w-[80%]"
-                  : "bg-gray-100 text-gray-900 mr-auto max-w-[80%]"
-              }`}
+              className={`p-4 rounded-lg ${message.role === "user"
+                ? "bg-[var(--theme-primary)] text-white ml-auto max-w-[80%]"
+                : "bg-gray-100 text-gray-900 mr-auto max-w-[80%]"
+                }`}
             >
               {message.content}
             </div>
@@ -94,17 +71,11 @@ const AIQueryBoard = () => {
             </div>
           )}
         </div>
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question about complaints..."
-            disabled={loading}
-          />
-          <Button type="submit" disabled={loading || !input.trim()}>
-            <Send size={18} />
+        <div className="flex gap-2">
+          <Button type="button" onClick={handleOpenForm} className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+            Open AI Assistant Form
           </Button>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -33,16 +34,23 @@ const ComplaintTable = () => {
 
   const fetchComplaints = async () => {
     try {
-      const { data, error } = await (supabase as any)
+      // Get current user's ID
+      const user = await supabase.auth.getUser();
+      if (!user.data?.user?.id) {
+        throw new Error('Not authenticated');
+      }
+
+      const { data, error } = await supabase
         .from("complaints")
         .select("*")
-        .order("created_at", { ascending: false })
-        .limit(10);
+        .eq('user_id', user.data.user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setComplaints(data || []);
     } catch (error) {
       console.error("Error fetching complaints:", error);
+      toast.error("Failed to fetch complaints. Please try again.");
     } finally {
       setLoading(false);
     }

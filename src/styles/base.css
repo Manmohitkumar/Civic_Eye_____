@@ -1,21 +1,23 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Smart Complaint Portal theme colors */
-    --theme-primary: #1976D2; /* Primary blue */
-    --theme-accent: #FBC02D;  /* Amber */
-    --theme-background: #F5F6FA; /* Light background */
-    
+    /* CivicEye theme colors */
+    --theme-primary: #1976D2;
+    /* Primary blue */
+    --theme-accent: #FBC02D;
+    /* Amber */
+    --theme-background: #F5F6FA;
+    /* Light background */
+
     /* Lighter variations with proper opacity for layering */
     --theme-primary-light: rgba(25, 118, 210, 0.08);
     --theme-primary-medium: rgba(25, 118, 210, 0.15);
     --theme-accent-light: rgba(251, 192, 45, 0.08);
     --theme-accent-medium: rgba(251, 192, 45, 0.15);
-    
+
     /* ShadCN variables - keeping these the same */
     --background: 30 25% 98%;
     --foreground: 20 10% 15%;
@@ -74,7 +76,7 @@
   * {
     @apply border-border selection:bg-gold/20 selection:text-foreground;
   }
-  
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
