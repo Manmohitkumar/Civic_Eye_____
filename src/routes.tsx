@@ -1,19 +1,22 @@
-
 import { createBrowserRouter } from "react-router-dom";
-import Index from "./pages/Index";
-import RegisterComplaint from "./pages/RegisterComplaint";
-import TrackComplaints from "./pages/TrackComplaints";
-import LiveMap from "./pages/LiveMap";
-import Reports from "./pages/Reports";
-import AIQuery from "./pages/AIQuery";
-import Feedback from "./pages/Feedback";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+import { lazy } from "react";
+
+// Lazy load pages for better performance
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const RegisterComplaint = lazy(() => import("./pages/RegisterComplaint"));
+const TrackComplaints = lazy(() => import("./pages/TrackComplaints"));
+const LiveMap = lazy(() => import("./pages/LiveMap"));
+const Reports = lazy(() => import("./pages/Reports"));
+const AIQuery = lazy(() => import("./pages/AIQuery"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const Auth = lazy(() => import("./pages/Auth"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 export const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Index />,
+    element: <Dashboard />,
   },
   {
     path: "/register-complaint",

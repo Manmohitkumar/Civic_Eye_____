@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,13 @@ import { toast } from "sonner";
 const APP_VERSION = '20250424';
 
 const queryClient = new QueryClient();
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
 
 const App: React.FC = () => {
   const [keySequence, setKeySequence] = useState<string>("");
@@ -66,7 +72,9 @@ const App: React.FC = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <RouterProvider router={routes} />
+        <Suspense fallback={<LoadingFallback />}>
+          <RouterProvider router={routes} />
+        </Suspense>
       </TooltipProvider>
     </QueryClientProvider>
   );
