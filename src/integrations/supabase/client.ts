@@ -2,8 +2,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Support several common env var names to avoid deployment mismatches (Vercel, Netlify, local .env)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL?.toString?.();
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_KEY || import.meta.env.SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL) {
+  // Fail fast with a clear message that is easier to diagnose on hosted platforms like Vercel
+  throw new Error('VITE_SUPABASE_URL (or SUPABASE_URL) is required. Set the Supabase URL in your environment variables (on Vercel: Project Settings → Environment Variables).');
+}
+if (!SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY) is required. Set the Supabase anon/publishable key in your environment variables.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
