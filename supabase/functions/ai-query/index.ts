@@ -13,26 +13,44 @@ serve(async (req) => {
   }
 
   try {
-    const { query } = await req.json();
-    console.log('AI Query received:', query);
+    // Verify JWT token for authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
 
-    // Fetch complaints data for context
+    // Verify the user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { query } = await req.json();
+
+    // Fetch complaints data for context (excluding sensitive user_id)
     const { data: complaints, error: dbError } = await supabase
       .from('complaints')
-      .select('*')
+      .select('complaint_id, title, description, category, status, location, priority, created_at, resolved_at, resolution_time_hours')
       .order('created_at', { ascending: false })
       .limit(50);
 
     if (dbError) {
-      console.error('Database error:', dbError);
       throw dbError;
     }
-
-    console.log('Fetched complaints:', complaints?.length);
 
     // Calculate statistics
     const totalComplaints = complaints?.length || 0;
@@ -68,8 +86,6 @@ Please answer the following user query based on this data. Be concise and helpfu
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Calling Lovable AI...');
-
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -88,14 +104,10 @@ Please answer the following user query based on this data. Be concise and helpfu
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const aiData = await response.json();
-    console.log('AI response received');
-
     const aiResponse = aiData.choices?.[0]?.message?.content || 'I could not process your query.';
 
     return new Response(
@@ -106,9 +118,8 @@ Please answer the following user query based on this data. Be concise and helpfu
       },
     );
   } catch (error) {
-    console.error('Error in ai-query function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      JSON.stringify({ error: 'An error occurred processing your request' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
