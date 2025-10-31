@@ -21,12 +21,18 @@ const RegisterComplaint = () => {
     location: "",
     priority: "medium",
   });
+  const [reporterName, setReporterName] = useState<string>("");
+  const [reporterEmail, setReporterEmail] = useState<string>("");
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setFormData(prev => ({ ...prev, user_id: user.id }));
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
       }
     };
     getUser();
@@ -164,21 +170,28 @@ const RegisterComplaint = () => {
         }
       }
 
-      if (!user) {
-        setLoading(false);
-        toast.error("Please login to submit a complaint");
-        return;
-      }
+      // If user not logged in, allow anonymous submission path below
 
-      // Fetch profile from 'profiles' table if exists (cast to any to avoid strict typed Postgrest client errors)
-      const { data: profile } = await supabase.from<any, any>("profiles").select("full_name,email,mobile_number,location_lat,location_lng,profile_completed,location_captured").eq("id", user.id).single();
-      const profileAny: any = profile;
+      // Fetch profile from 'profiles' table if user is authenticated
+      let profileAny: any = null;
+      if (user) {
+        try {
+          const { data: profile, error: profileError } = await supabase.from<any, any>("profiles").select("full_name,email,mobile_number,location_lat,location_lng,profile_completed,location_captured").eq("id", user.id).single();
+          if (profileError) {
+            console.warn('Profile fetch error', profileError);
+          }
+          profileAny = profile || null;
 
-      if (!profileAny || !profileAny.profile_completed) {
-        setLoading(false);
-        toast.error("Please complete your profile (mobile & location) before filing a complaint");
-        // navigate to profile page could be done here if route exists
-        return;
+          if (!profileAny || !profileAny.profile_completed) {
+            setLoading(false);
+            toast.error("Please complete your profile (mobile & location) before filing a complaint");
+            // navigate to profile page could be done here if route exists
+            return;
+          }
+        } catch (e) {
+          console.warn('Failed to fetch profile', e);
+          profileAny = null;
+        }
       }
 
       // Capture location with geolocation API (fallback to profile)
@@ -189,9 +202,14 @@ const RegisterComplaint = () => {
         lat = parseFloat(pos.coords.latitude.toFixed(6));
         lng = parseFloat(pos.coords.longitude.toFixed(6));
       } catch (geoErr) {
-        // fallback to profile location
-        lat = profileAny.location_lat || null;
-        lng = profileAny.location_lng || null;
+        // fallback to profile location if available (authenticated users)
+        if (profileAny) {
+          lat = profileAny.location_lat || null;
+          lng = profileAny.location_lng || null;
+        } else {
+          lat = null;
+          lng = null;
+        }
       }
 
       if (!lat || !lng) {
@@ -208,51 +226,103 @@ const RegisterComplaint = () => {
       const googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
       const departmentEmail = getDepartmentEmail(formData.category);
 
-      const complaintRecord = {
-        reference_id: referenceId,
-        complaint_id: referenceId,
-        title: `Complaint - ${formData.category}`,
-        user_id: user.id,
-        user_name: profileAny.full_name || user.email || "",
-        user_email: profileAny.email || user.email || "",
-        user_mobile: profileAny.mobile_number || "",
-        category: formData.category,
-        ai_suggested_category: null,
-        photo_url: photoUrl,
-        location_lat: lat,
-        location_lng: lng,
-        location: lat && lng ? `${lat},${lng}` : "",
-        google_maps_link: googleMapsLink,
-        department_email: departmentEmail,
-        description: formData.description || null,
-        status: "Submitted",
-        created_date: new Date().toISOString(),
-        created_by: user.email || null,
-      };
+      if (user) {
+        // Authenticated user: insert via client (existing behavior)
+        const complaintRecord = {
+          reference_id: referenceId,
+          complaint_id: referenceId,
+          title: `Complaint - ${formData.category}`,
+          user_id: user.id,
+          user_name: profileAny.full_name || user.email || "",
+          user_email: profileAny.email || user.email || "",
+          user_mobile: profileAny.mobile_number || "",
+          category: formData.category,
+          ai_suggested_category: null,
+          photo_url: photoUrl,
+          location_lat: lat,
+          location_lng: lng,
+          location: lat && lng ? `${lat},${lng}` : "",
+          google_maps_link: googleMapsLink,
+          department_email: departmentEmail,
+          description: formData.description || null,
+          status: "Submitted",
+          created_date: new Date().toISOString(),
+          created_by: user.email || null,
+        };
 
-      const { error: insertError } = await supabase.from("complaints").insert(complaintRecord);
-      if (insertError) throw insertError;
+        const { error: insertError } = await supabase.from("complaints").insert(complaintRecord);
+        if (insertError) throw insertError;
 
-      // Success
-      toast.success(`Complaint submitted — Reference: ${referenceId}`);
+        // Success
+        toast.success(`Complaint submitted — Reference: ${referenceId}`);
 
-      // Attempt to notify department via mailer service (best-effort)
-      try {
-        const MAILER_URL = import.meta.env.VITE_MAILER_URL || 'http://127.0.0.1:5000';
-        await fetch(`${MAILER_URL}/api/send-complaint`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: profileAny.full_name || user.email || '',
-            email: profileAny.email || user.email || '',
-            category: formData.category,
-            description: formData.description || '',
-            location: `${lat},${lng}`,
-            imageUrl: photoUrl,
-          }),
-        });
-      } catch (mailErr) {
-        console.warn('Mailer notification failed (non-blocking)', mailErr);
+        // Attempt to notify department via mailer service (best-effort)
+        try {
+          const MAILER_URL = import.meta.env.VITE_MAILER_URL || 'http://127.0.0.1:5000';
+          await fetch(`${MAILER_URL}/api/send-complaint`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: profileAny.full_name || user.email || '',
+              email: profileAny.email || user.email || '',
+              category: formData.category,
+              description: formData.description || '',
+              location: `${lat},${lng}`,
+              imageUrl: photoUrl,
+            }),
+          });
+        } catch (mailErr) {
+          console.warn('Mailer notification failed (non-blocking)', mailErr);
+        }
+      } else {
+        // Anonymous submission: call server endpoint which will insert using service role and send emails
+        // require reporterEmail for acknowledgements
+        const emailToUse = reporterEmail?.trim() || '';
+        if (!emailToUse || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailToUse)) {
+          setLoading(false);
+          toast.error('Please provide a valid contact email to register anonymously');
+          return;
+        }
+
+        const payload = {
+          reference_id: referenceId,
+          title: `Complaint - ${formData.category}`,
+          reporter_name: reporterName || '',
+          reporter_email: emailToUse,
+          category: formData.category,
+          photo_url: photoUrl,
+          location_lat: lat,
+          location_lng: lng,
+          location: lat && lng ? `${lat},${lng}` : "",
+          description: formData.description || null,
+          department_email: departmentEmail,
+        };
+
+        try {
+          const MAILER_URL = import.meta.env.VITE_MAILER_URL || 'http://127.0.0.1:5000';
+          const resp = await fetch(`${MAILER_URL}/api/complaints/anonymous`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!resp.ok) {
+            // try to show helpful error from server
+            let errMsg = 'Anonymous submission failed';
+            try {
+              const body = await resp.json();
+              if (body && body.error) errMsg = body.error;
+              else if (body && body.message) errMsg = body.message;
+            } catch (e) {
+              const txt = await resp.text().catch(() => null);
+              if (txt) errMsg = txt;
+            }
+            throw new Error(errMsg);
+          }
+          toast.success(`Complaint submitted — Reference: ${referenceId}`);
+        } catch (e: any) {
+          console.error(e);
+          toast.error(e?.message || 'Failed to submit anonymous complaint. Try again later.');
+        }
       }
       // Optionally redirect to My Complaints or show reference
       // navigate('/my-complaints');
@@ -299,6 +369,15 @@ const RegisterComplaint = () => {
                   </div>
 
                   <div>
+                    {!currentUser && (
+                      <>
+                        <Label htmlFor="reporter_name">Your name (optional)</Label>
+                        <Input id="reporter_name" value={reporterName} onChange={(e) => setReporterName((e.target as HTMLInputElement).value)} placeholder="Full name (optional)" className="mt-2 mb-3" />
+                        <Label htmlFor="reporter_email">Contact email (required for anonymous)</Label>
+                        <Input id="reporter_email" value={reporterEmail} onChange={(e) => setReporterEmail((e.target as HTMLInputElement).value)} placeholder="you@example.com" className="mt-2 mb-3" />
+                      </>
+                    )}
+
                     <Label htmlFor="photo">Photo (required)</Label>
                     <input id="photo" type="file" accept="image/*" onChange={(e) => handlePhotoChange(e.target.files?.[0])} className="mt-2" />
                     {photoPreview && (

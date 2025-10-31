@@ -11,6 +11,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [method, setMethod] = useState("password"); // 'password' or 'otp'
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -26,8 +27,10 @@ export default function Login() {
         const e = {};
         if (!email) e.email = "Email is required";
         else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "Enter a valid email";
-        if (!password) e.password = "Password is required";
-        else if (password.length < 6) e.password = "Password must be at least 6 characters";
+        if (method === 'password') {
+            if (!password) e.password = "Password is required";
+            else if (password.length < 6) e.password = "Password must be at least 6 characters";
+        }
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -37,37 +40,50 @@ export default function Login() {
         if (!validate()) return;
         setLoading(true);
         try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+            if (method === 'password') {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password }),
+                });
 
-            if (!res.ok) {
-                const payload = await res.json().catch(() => ({}));
-                toast.error(payload?.message || "Login failed");
-                setLoading(false);
-                return;
-            }
+                if (!res.ok) {
+                    const payload = await res.json().catch(() => ({}));
+                    toast.error(payload?.message || "Login failed");
+                    setLoading(false);
+                    return;
+                }
 
-            const data = await res.json();
-            // Server may respond with either a final token OR indicate OTP is required
-            // Example when OTP required: { otpRequired: true, otpToken: 'abc' }
-            if (data.otpRequired) {
-                setOtpToken(data.otpToken || null);
-                setOtpStep(true);
-                setCanResend(false);
-                setResendTimer(60);
-                // start timer
-            } else {
-                // final token flow
+                const data = await res.json();
                 if (data.token) {
                     localStorage.setItem("auth_token", data.token);
+                    toast.success("Signed in successfully");
+                    setTimeout(() => (window.location.href = "/dashboard"), 700);
+                    return;
                 }
-                toast.success("Signed in successfully");
-                setTimeout(() => {
-                    window.location.href = "/dashboard";
-                }, 700);
+                toast.error("Login failed");
+            } else {
+                // OTP / magic link replaced by server-side OTP flow
+                const res = await fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+                if (!res.ok) {
+                    const payload = await res.json().catch(() => ({}));
+                    toast.error(payload?.message || 'Failed to send OTP');
+                    setLoading(false);
+                    return;
+                }
+                const data = await res.json();
+                if (data.otpRequired) {
+                    setOtpToken(data.otpToken || null);
+                    setOtpStep(true);
+                    setCanResend(false);
+                    setResendTimer(60);
+                } else {
+                    toast.error('Failed to send OTP');
+                }
             }
         } catch (err) {
             console.error(err);
@@ -174,6 +190,16 @@ export default function Login() {
                         >
                             <h2 className="text-2xl font-semibold text-white mb-4">Sign In</h2>
 
+                            <div className="flex items-center gap-4 mb-2">
+                                <label className="flex items-center gap-2 text-white/90">
+                                    <input type="radio" name="method" checked={method === 'password'} onChange={() => setMethod('password')} />
+                                    <span className="ml-1">Password</span>
+                                </label>
+                                <label className="flex items-center gap-2 text-white/90">
+                                    <input type="radio" name="method" checked={method === 'otp'} onChange={() => setMethod('otp')} />
+                                    <span className="ml-1">Email OTP</span>
+                                </label>
+                            </div>
                             <label className="block text-sm text-white/90 mb-1">Email</label>
                             <input
                                 type="email"
