@@ -50,11 +50,11 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--theme-background)]">
+    <div className="min-h-screen" style={{ backgroundColor: 'hsl(var(--background))' }}>
       <DashboardHeader />
       <div className="flex">
         <DashboardSidebar />
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-6 lg:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto space-y-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -62,26 +62,30 @@ const Dashboard = () => {
                 title="Total Complaints"
                 value={stats.total}
                 icon={FileText}
-                iconBgColor="bg-blue-100"
+                iconBgColor="bg-blue-50"
+                iconColor="text-blue-600"
               />
               <StatsCard
                 title="Resolved Complaints"
                 value={stats.resolved}
                 icon={CheckCircle}
-                iconBgColor="bg-green-100"
+                iconBgColor="bg-green-50"
+                iconColor="text-green-600"
                 trend="+12% from last month"
               />
               <StatsCard
                 title="Pending Complaints"
                 value={stats.pending}
                 icon={Clock}
-                iconBgColor="bg-red-100"
+                iconBgColor="bg-red-50"
+                iconColor="text-red-600"
               />
               <StatsCard
                 title="Avg Resolution Time"
                 value={`${stats.avgResolutionTime}h`}
                 icon={Timer}
-                iconBgColor="bg-amber-100"
+                iconBgColor="bg-amber-50"
+                iconColor="text-amber-600"
               />
             </div>
 

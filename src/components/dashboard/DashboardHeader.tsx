@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Bell, User, LogIn } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,8 +15,8 @@ const DashboardHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <div className="px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
@@ -25,22 +25,22 @@ const DashboardHeader = () => {
               alt="Logo" 
               className="h-8 w-12"
             />
-            <span className="text-xl font-bold text-[var(--theme-primary)]">
+            <span className="text-xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
               Smart Complaint Portal
             </span>
           </Link>
 
-          {/* Center Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <NavLink to="/" icon="🏠">Dashboard</NavLink>
-            <NavLink to="/live-map" icon="🗺">Live Map</NavLink>
-            <NavLink to="/reports" icon="📊">Reports</NavLink>
-            <NavLink to="/ai-query" icon="🤖">AI Query Board</NavLink>
-            <NavLink to="/feedback" icon="💬">Feedback</NavLink>
+          {/* Center Navigation Tabs */}
+          <nav className="hidden lg:flex items-center gap-1">
+            <NavTab to="/" icon="🏠">Dashboard</NavTab>
+            <NavTab to="/live-map" icon="🗺">Live Map</NavTab>
+            <NavTab to="/reports" icon="📊">Reports</NavTab>
+            <NavTab to="/ai-query" icon="🤖">AI Query Board</NavTab>
+            <NavTab to="/feedback" icon="💬">Feedback</NavTab>
           </nav>
 
           {/* Right Side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Notification Center */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -57,10 +57,25 @@ const DashboardHeader = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80">
-                <div className="p-2 font-semibold border-b">Notifications</div>
-                <DropdownMenuItem>New complaint response received</DropdownMenuItem>
-                <DropdownMenuItem>Your complaint has been resolved</DropdownMenuItem>
-                <DropdownMenuItem>System maintenance scheduled</DropdownMenuItem>
+                <div className="p-3 font-semibold border-b">Notification Center</div>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-medium">Complaint #1234 Resolved</div>
+                    <div className="text-sm text-gray-500">2 hours ago</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-medium">New Response Received</div>
+                    <div className="text-sm text-gray-500">5 hours ago</div>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-3 cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <div className="font-medium">System Update</div>
+                    <div className="text-sm text-gray-500">1 day ago</div>
+                  </div>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -70,8 +85,9 @@ const DashboardHeader = () => {
               className="gap-2"
               onClick={() => navigate('/auth')}
             >
-              <LogIn size={18} />
-              <span>Login / Sign Up</span>
+              <User size={18} />
+              <span className="hidden sm:inline">Login / Sign In</span>
+              <span className="sm:hidden">Login</span>
             </Button>
           </div>
         </div>
@@ -80,7 +96,7 @@ const DashboardHeader = () => {
   );
 };
 
-const NavLink = ({ 
+const NavTab = ({ 
   to, 
   icon, 
   children 
@@ -88,14 +104,23 @@ const NavLink = ({
   to: string; 
   icon: string; 
   children: React.ReactNode;
-}) => (
-  <Link 
-    to={to}
-    className="flex items-center gap-2 text-gray-700 hover:text-[var(--theme-primary)] transition-colors font-medium"
-  >
-    <span>{icon}</span>
-    <span>{children}</span>
-  </Link>
-);
+}) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <Link 
+      to={to}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all font-medium ${
+        isActive 
+          ? 'bg-primary text-primary-foreground' 
+          : 'text-gray-700 hover:bg-gray-100'
+      }`}
+    >
+      <span>{icon}</span>
+      <span>{children}</span>
+    </Link>
+  );
+};
 
 export default DashboardHeader;
