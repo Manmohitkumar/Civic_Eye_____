@@ -24,6 +24,43 @@ export const authSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters").max(100, "Password must not exceed 100 characters"),
 });
 
+export const propertySchema = z.object({
+  email: z.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters"),
+  address: z.string()
+    .trim()
+    .min(10, "Address must be at least 10 characters")
+    .max(500, "Address must be less than 500 characters"),
+  additionalDetails: z.string()
+    .trim()
+    .max(2000, "Additional details must be less than 2000 characters")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const propertyInquirySchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name must be less than 100 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+  phone: z.string()
+    .trim()
+    .regex(/^[0-9]{10,15}$/, "Please enter a valid phone number (10-15 digits)"),
+  email: z.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters"),
+  city: z.string()
+    .trim()
+    .min(2, "City must be at least 2 characters")
+    .max(100, "City must be less than 100 characters"),
+});
+
 export type ComplaintFormData = z.infer<typeof complaintSchema>;
 export type FeedbackFormData = z.infer<typeof feedbackSchema>;
 export type AuthFormData = z.infer<typeof authSchema>;
+export type PropertyFormData = z.infer<typeof propertySchema>;
+export type PropertyInquiryFormData = z.infer<typeof propertyInquirySchema>;

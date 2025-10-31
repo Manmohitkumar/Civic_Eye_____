@@ -7,12 +7,13 @@ import Footer from "@/components/Footer";
 import PropertyForm from "@/components/property/PropertyForm";
 import AdminPanel from "@/components/property/AdminPanel";
 import SuccessView from "@/components/property/SuccessView";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { propertySchema } from "@/lib/validationSchemas";
 
 const GOOGLE_FORM_URL_KEY = "propertyFormGoogleFormUrl";
-// Secret key combination to show admin panel
-const ADMIN_KEY_SEQUENCE = "propicoadmin";
 
 const ListProperty = () => {
+  const { isAdmin, isLoading } = useAdminCheck();
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
@@ -21,8 +22,6 @@ const ListProperty = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [showSetupInstructions, setShowSetupInstructions] = useState(false);
   const [urlSaved, setUrlSaved] = useState(false);
-  const [keySequence, setKeySequence] = useState("");
-  const [showAdmin, setShowAdmin] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
   const [debugMode, setDebugMode] = useState(false);
 
@@ -33,35 +32,8 @@ const ListProperty = () => {
       setUrlSaved(true);
     }
     
-    const isAdminMode = sessionStorage.getItem("propicoAdminMode") === "true";
-    setShowAdmin(isAdminMode);
-    
     const isDebugMode = localStorage.getItem("propicoDebugMode") === "true";
     setDebugMode(isDebugMode);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (/^[a-z]$/i.test(e.key)) {
-        setKeySequence(prev => {
-          const newSequence = (prev + e.key).toLowerCase().slice(-ADMIN_KEY_SEQUENCE.length);
-          
-          if (newSequence === ADMIN_KEY_SEQUENCE) {
-            setShowAdmin(true);
-            sessionStorage.setItem("propicoAdminMode", "true");
-            toast({
-              title: "Admin mode activated",
-              description: "You can now configure Google Sheets integration."
-            });
-          }
-          
-          return newSequence;
-        });
-      }
-    };
-    
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const toggleUrlInput = () => {
@@ -96,14 +68,6 @@ const ListProperty = () => {
     }
   };
   
-  const exitAdminMode = () => {
-    setShowAdmin(false);
-    sessionStorage.removeItem("propicoAdminMode");
-    toast({
-      title: "Admin mode deactivated",
-      description: "Google Form configuration is now hidden."
-    });
-  };
 
   const extractFieldIdsFromUrl = (url: string) => {
     try {
@@ -215,41 +179,46 @@ const ListProperty = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    const submission = {
+    // Validate form data
+    const validation = propertySchema.safeParse({
       email,
       address,
       additionalDetails,
-      timestamp: new Date().toISOString()
-    };
+    });
     
-    if (debugMode) {
-      console.log("Form submission started:", submission);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast({
+        title: "Validation Error",
+        description: firstError.message,
+        variant: "destructive",
+      });
+      return;
     }
+    
+    setIsSubmitting(true);
+    
+    // Use validated data
+    const submission = {
+      email: validation.data.email,
+      address: validation.data.address,
+      additionalDetails: validation.data.additionalDetails || "",
+      timestamp: new Date().toISOString(),
+    };
     
     try {
       const existingSubmissions = JSON.parse(localStorage.getItem("propertySubmissions") || "[]");
       existingSubmissions.push(submission);
       localStorage.setItem("propertySubmissions", JSON.stringify(existingSubmissions));
       
-      if (debugMode) {
-        console.log("Saved to localStorage successfully");
-      }
-      
       let googleFormSuccess = false;
       if (googleFormUrl) {
         googleFormSuccess = await submitToGoogleForm({
-          email,
-          address,
-          additionalDetails
+          email: validation.data.email,
+          address: validation.data.address,
+          additionalDetails: validation.data.additionalDetails || "",
         });
-        
-        if (googleFormSuccess) {
-          console.log("Successfully submitted to Google Form");
-        } else {
-          console.warn("Google Form submission may have failed, but local data was saved");
-        }
       }
       
       setSubmissionSuccess(true);
@@ -268,7 +237,6 @@ const ListProperty = () => {
         description: "There was a problem saving your information. Please try again.",
         variant: "destructive"
       });
-      console.error("Error saving submission:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -314,7 +282,7 @@ const ListProperty = () => {
               <p>We value your privacy and will never share your information with third parties without your consent. By submitting this form, you agree to our <Link to="/privacy-policy" className="text-purple-600 hover:underline">privacy policy</Link>.</p>
             </div>
             
-            {showAdmin && (
+            {isAdmin && (
               <AdminPanel
                 googleFormUrl={googleFormUrl}
                 setGoogleFormUrl={setGoogleFormUrl}
@@ -326,7 +294,6 @@ const ListProperty = () => {
                 debugMode={debugMode}
                 toggleDebugMode={toggleDebugMode}
                 saveGoogleFormUrl={saveGoogleFormUrl}
-                exitAdminMode={exitAdminMode}
               />
             )}
           </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
+import { propertyInquirySchema } from "@/lib/validationSchemas";
 
 // === Hardcoded Google Form Integration Values ===
 // These now match your exact form setup.
@@ -79,18 +80,12 @@ const PropertyInquiryFormHorizontal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.name ||
-      !formData.phone ||
-      !formData.email ||
-      !formData.city
-    ) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Please enter a valid email address");
+    // Validate using zod schema
+    const validation = propertyInquirySchema.safeParse(formData);
+    
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 

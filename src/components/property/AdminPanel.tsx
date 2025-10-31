@@ -17,7 +17,6 @@ interface AdminPanelProps {
   debugMode: boolean;
   toggleDebugMode: () => void;
   saveGoogleFormUrl: () => void;
-  exitAdminMode: () => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -31,20 +30,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   debugMode,
   toggleDebugMode,
   saveGoogleFormUrl,
-  exitAdminMode,
 }) => {
   return (
     <div className="mt-10 border-t pt-6">
-      <div className="flex justify-between items-center">
+      <div>
         <h3 className="font-medium text-lg theme-primary-text">Admin Settings</h3>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={exitAdminMode}
-          className="text-xs"
-        >
-          Exit Admin Mode
-        </Button>
       </div>
       
       <div className="mt-4">
